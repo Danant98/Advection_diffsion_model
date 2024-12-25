@@ -49,7 +49,7 @@ class advection_diffusion:
         # Fourier transfrom of initial condition
         uhat = sfft.fft(self.u[:, 0])
 
-        for i in range(self.t.shape[0]):
+        for i in range(1, self.t.shape[0]):
             uhat = uhat / (1 - self.dt * self.L_hat)
             self.u[:, i] = np.real(sfft.ifft(uhat))
         
