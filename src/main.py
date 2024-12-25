@@ -42,7 +42,7 @@ class advection_diffusion:
     def solve(self) -> np.ndarray:
         """
         Solving the advection-diffusion equation using Fourier-Galerkin in space
-        and central difference in time
+        and backward difference in time
         """
         # Initial condition u(x, 0)
         self.u[:, 0] = self.u0()
