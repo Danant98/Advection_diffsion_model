@@ -11,11 +11,11 @@ class advection_diffusion:
 
     def __init__(self, 
                  N: int = 64, 
-                 L: float = 2 * np.pi, 
+                 L: float = 4 * np.pi, 
                  T: float = 1.0, 
-                 dt: float = 1e-3,
+                 dt: float = 1e-2,
                  v: float = 1.0,
-                 D: float = 0.01
+                 D: float = 1.0
                  ) -> None:
         # Defining spacial domain
         self.x = np.linspace(0, L, N)
@@ -42,7 +42,7 @@ class advection_diffusion:
     def solve(self) -> np.ndarray:
         """
         Solving the advection-diffusion equation using Fourier-Galerkin in space
-        and backward Euler scheme in time
+        and central difference in time
         """
         # Initial condition u(x, 0)
         self.u[:, 0] = self.u0()
@@ -50,7 +50,7 @@ class advection_diffusion:
         uhat = sfft.fft(self.u[:, 0])
 
         for i in range(self.t.shape[0]):
-            uhat += uhat / (1 - self.dt * self.L_hat)
+            uhat = uhat / (1 - self.dt * self.L_hat)
             self.u[:, i] = np.real(sfft.ifft(uhat))
         
         return self.u
