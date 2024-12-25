@@ -16,7 +16,7 @@ class advection_diffusion:
                  Ly: float = 25,
                  T: float = 2.0, 
                  dt: float = 1e-2,
-                 vx: float = 1.0,
+                 vx: float = 10.0,
                  vy: float = 1.0,
                  D: float = 1.0,
                  dims: str = '1D'
@@ -60,10 +60,10 @@ class advection_diffusion:
             self.Ly = Ly
 
             # Computing 2D linear operator in Fourier space (Advection + Diffusion terms) 
-            self.L_hat = -(1j * vx * self.kx + 1j * vy * self.ky + D * (self.kx**2 + self.ky**2))
+            self.L_hat = -((1j * vx * self.kx) + (1j * vy * self.ky) + D * (self.kx**2 + self.ky**2))
 
             # Initializing u(x, y, t)
-            self.u = np.zeros((Nx, Ny, len(np.arange(0, T, dt))))
+            self.u = np.zeros((Nx, Ny, len(self.t)))
 
 
     def u0(self, l: float = 2.0, amp: float = 1.0) -> np.ndarray:
@@ -121,12 +121,12 @@ class advection_diffusion:
             plt.figure()
             for i in range(self.u.shape[2]):
                 plt.clf()
-                plt.contourf(self.x, self.y, self.u[:, :, i])
+                plt.contourf(self.x, self.y, self.u[:, :, i], levels = 100)
                 plt.colorbar(label = r'$n(x, y)$')
                 plt.xlabel(r'$x$')
                 plt.ylabel(r'$y$')
                 plt.title(f'Time: {self.t[i]:.3f}')
-                plt.pause(1E-4)
+                plt.pause(1E-8)
         plt.show()
 
 if __name__ == '__main__':
