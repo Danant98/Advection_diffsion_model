@@ -10,13 +10,13 @@ import matplotlib.pyplot as plt
 class advection_diffusion:
 
     def __init__(self, 
-                 Nx: int = 256, 
-                 Ny: int = 256,
-                 Lx: float = 25, 
-                 Ly: float = 25,
-                 T: float = 2.0, 
+                 Nx: int = 128, 
+                 Ny: int = 128,
+                 Lx: float = 10, 
+                 Ly: float = 10,
+                 T: float = 1.0, 
                  dt: float = 1e-2,
-                 vx: float = 10.0,
+                 vx: float = 5.0,
                  vy: float = 1.0,
                  D: float = 1.0,
                  dims: str = '1D'
@@ -53,7 +53,7 @@ class advection_diffusion:
             # Defining wavenumbers (kx and ky)
             kx = np.fft.fftfreq(Nx, d = Lx / Nx) * 2 * np.pi
             ky = np.fft.fftfreq(Ny, d = Ly / Ny) * 2 * np.pi
-            self.kx, self.ky = np.meshgrid(kx, ky, indexing = 'ij')
+            self.kx, self.ky = np.meshgrid(kx, ky)
 
             # Defining size of domain
             self.Lx = Lx
@@ -66,25 +66,25 @@ class advection_diffusion:
             self.u = np.zeros((Nx, Ny, len(self.t)))
 
 
-    def u0(self, l: float = 2.0, amp: float = 1.0) -> np.ndarray:
+    def u0(self, l: float, amp: float = 1.0) -> np.ndarray:
         """
         Inintal conditions; Gaussian distribution
         """
         if self.dims == '1D':
             return amp * np.exp(-((self.x - (self.L / 2))**2 ) / (2 * l**2))
         elif self.dims == '2D':
-            X, Y = np.meshgrid(self.x, self.y, indexing = 'ij')
+            X, Y = np.meshgrid(self.x, self.y)
             return amp * np.exp(-( (X - (self.Lx / 2))**2 + (Y - (self.Ly / 2))**2 ) / (2 * l**2) )
 
 
     def solve(self) -> np.ndarray:
         """
         Solving the advection-diffusion equation using Fourier-Galerkin in space
-        and backward difference in time
+        and backward Euler in time
         """
         if self.dims == '1D':
             # Initial condition u(x, 0)
-            self.u[:, 0] = self.u0()
+            self.u[:, 0] = self.u0(0.03 * self.Lx) 
             # Fourier transfrom of initial condition
             uhat = sfft.fft(self.u[:, 0])
 
@@ -94,7 +94,7 @@ class advection_diffusion:
                 self.u[:, i] = np.real(sfft.ifft(uhat))
         elif self.dims == '2D':
             # Initial condition u(x, y, 0)
-            self.u[:, :, 0] = self.u0()
+            self.u[:, :, 0] = self.u0(0.03 * self.Lx)
             # Fourier transfrom of initial condition
             uhat = sfft.fft2(self.u[:, :, 0])
 
@@ -121,7 +121,7 @@ class advection_diffusion:
             plt.figure()
             for i in range(self.u.shape[2]):
                 plt.clf()
-                plt.contourf(self.x, self.y, self.u[:, :, i], levels = 100)
+                plt.contourf(self.x, self.y, self.u[:, :, i], levels = 200)
                 plt.colorbar(label = r'$n(x, y)$')
                 plt.xlabel(r'$x$')
                 plt.ylabel(r'$y$')
