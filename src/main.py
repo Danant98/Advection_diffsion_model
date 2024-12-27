@@ -17,7 +17,7 @@ class advection_diffusion:
                  T: float = 1.0, 
                  dt: float = 1e-2,
                  vx: float = 0.5,
-                 vy: float = 0.1,
+                 vy: float = 0.0,
                  D: float = 0.05,
                  dims: str = '1D'
                  ) -> None:
@@ -124,7 +124,7 @@ class advection_diffusion:
             vmin, vmax = self.u.min(), self.u.max()
             for i in range(self.u.shape[2]):
                 plt.clf()
-                plt.contourf(self.x, self.y, self.u[:, :, i], levels = 200, vmin = vmin, vmax = vmax)
+                plt.contourf(self.x, self.y, self.u[:, :, i], levels = 200)
                 plt.colorbar(label = r'$n(x, y)$')
                 plt.xlabel(r'$x$')
                 plt.ylabel(r'$y$')
