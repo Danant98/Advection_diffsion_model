@@ -42,6 +42,7 @@ class advection_diffusion:
 
             # Initialize u(x, t)
             self.u = np.zeros((self.x.shape[0], len(np.arange(0, T, dt))))
+            
         elif dims == '2D':
             # Define spatial domain
             self.x = np.linspace(0, Lx, Nx)
