@@ -12,13 +12,13 @@ class advection_diffusion:
     def __init__(self, 
                  Nx: int = 128, 
                  Ny: int = 128,
-                 Lx: float = 10, 
-                 Ly: float = 10,
+                 Lx: float = 1.0, 
+                 Ly: float = 1.0,
                  T: float = 1.0, 
                  dt: float = 1e-2,
-                 vx: float = 5.0,
-                 vy: float = 1.0,
-                 D: float = 1.0,
+                 vx: float = 0.5,
+                 vy: float = 0.1,
+                 D: float = 0.05,
                  dims: str = '1D'
                  ) -> None:
         # Storing dimensions
@@ -111,17 +111,20 @@ class advection_diffusion:
         """
         if self.dims == '1D':
             plt.figure()
+            vmin, vmax = self.u.min(), self.u.max()
             for i in range(self.u.shape[1]):
                 plt.clf()
                 plt.plot(self.x, self.u[:, i])
                 plt.xlabel(r'$x$')
                 plt.ylabel(r'$u(x, t)$')
+                plt.ylim([vmin, vmax])
                 plt.pause(1E-7)
         elif self.dims == '2D':
             plt.figure()
+            vmin, vmax = self.u.min(), self.u.max()
             for i in range(self.u.shape[2]):
                 plt.clf()
-                plt.contourf(self.x, self.y, self.u[:, :, i], levels = 200)
+                plt.contourf(self.x, self.y, self.u[:, :, i], levels = 200, vmin = vmin, vmax = vmax)
                 plt.colorbar(label = r'$n(x, y)$')
                 plt.xlabel(r'$x$')
                 plt.ylabel(r'$y$')
