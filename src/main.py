@@ -93,6 +93,7 @@ class advection_diffusion:
             for i in range(1, self.u.shape[1]):
                 uhat = uhat / (1 - self.dt * self.L_hat)
                 self.u[:, i] = np.real(sfft.ifft(uhat))
+                
         elif self.dims == '2D':
             # Initial condition u(x, y, 0)
             self.u[:, :, 0] = self.u0(0.03 * self.Lx)
