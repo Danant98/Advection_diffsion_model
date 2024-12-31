@@ -59,7 +59,7 @@ function solve!(model::AdvectionDiffusion)
     uhat = fft(model.u[:, :, 1])
 
     for n in 2:length(model.t)
-        uhat .= uhat ./ (1 .- model.dt .* model.Lhat)
+        uhat .= uhat ./ (1 .- (model.dt .* model.Lhat))
 
         model.u[:, :, n] .= real(ifft(uhat))
     end
