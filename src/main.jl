@@ -21,20 +21,20 @@ struct AdvectionDiffusion
 end
 
 # Constructor
-function AdvectionDiffusion(Nx = 256, Ny = 256, Lx = 10.0, Ly = 10.0, T = 1.0, dt = 0.01, vx = 1.0, vy = 0.0, D = 1.0)
+function AdvectionDiffusion(Nx = 256, Ny = 256, Lx = 10.0, Ly = 10.0, T = 2.0, dt = 0.01, vx = 1.0, vy = 0.5, D = 0.1)
     # Creating spatial and temporal domains
     x = range(0, Lx, Nx)
     y = range(0, Ly, Ny)
     t = 0:dt:T
 
     # Wavenumbers
-    kx = 2π * fftfreq(Nx, 1 / Nx)[1:(div(Nx, 2) + 1)] 
+    kx = 2π * fftfreq(Nx, 1 / Nx)
     ky = 2π * fftfreq(Ny, 1 / Ny)
     kx_grid = reshape(repeat(kx, inner = Ny), Nx, Ny)
     ky_grid = reshape(repeat(ky, outer = Nx), Nx, Ny)
 
     # Linear operator in Fourier space
-    Lhat = -1im * (vx * kx_grid .+ vy * ky_grid) .- D * (kx_grid.^2 + ky_grid.^2)
+    Lhat = @. -1im * (vx * kx_grid + vy * ky_grid) - D * (kx_grid^2 + ky_grid^2)
 
     # Initializing u(x, y, t)
     u = zeros(Float64, Nx, Ny, length(t))
@@ -43,7 +43,7 @@ function AdvectionDiffusion(Nx = 256, Ny = 256, Lx = 10.0, Ly = 10.0, T = 1.0, d
 end
 
 # Inintal condition; Gaussian distribution
-function Inintal_condition(model::AdvectionDiffusion, l::Float64, amp::Float64 = 1.0)
+function inintal_condition(model::AdvectionDiffusion, l::Float64, amp::Float64 = 0.5)
     # Creating 2D grid
     X = reshape(repeat(model.x, inner = model.Ny), model.Nx, model.Ny)
     Y = reshape(repeat(model.y, outer = model.Nx), model.Nx, model.Ny)
@@ -53,30 +53,25 @@ end
 # Solving using Fourier-Galerkin spectral method
 function solve!(model::AdvectionDiffusion)
     # Initial. condtion
-    model.u[:, :, 1] .= Inintal_condition(model, 0.03 * model.Lx)
+    model.u[:, :, 1] .= inintal_condition(model, 0.05 * model.Lx)
 
     # Fourier transfrom of the initial condition
-    uhat = rfft(model.u[:, :, 1])
+    uhat = fft(model.u[:, :, 1])
 
     for n in 2:length(model.t)
         uhat .= uhat ./ (1 .- model.dt .* model.Lhat)
-        
-        # Zero-pad uhat to match dimensions of u(x, y, t)
-        uhat_full = zeros(Complex{Float64}, model.Nx, model.Ny)
-        uhat_full[1:size(uhat, 1), :] .= uhat
 
-        model.u[:, :, n] .= real(rifft(uhat_full))
+        model.u[:, :, n] .= real(ifft(uhat))
     end
 end
 
 # Creating animation
 function animate(model::AdvectionDiffusion)
     anim = @animate for n in 1:length(model.t)
-        contourf(model.x, model.y, model.u[:, :, n], level = 50)
-        xlabel("x")
-        ylabel("y")
-        title("Time: $(round(model.t[n], digits = 2))")
-        colorbar()
+        contourf(model.x, model.y, model.u[:, :, n], level = 200, colorbar = true)
+        xlabel!("x")
+        ylabel!("y")
+        title!("Time: $(round(model.t[n], digits = 2))")
     end
     return anim
 end
