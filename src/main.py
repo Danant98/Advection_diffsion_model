@@ -123,7 +123,7 @@ class advection_diffusion:
                 plt.legend()
             fig = plt.figure()
             anim = animation.FuncAnimation(fig, animate, frames=len(self.t), interval = 50)
-            anim.save('advection_diffusion_1D.gif', writer='pillow')
+            anim.save('figure_python/advection_diffusion_1D.gif', writer='pillow')
 
         elif self.dims == '2D':
             def animate(i):
@@ -132,13 +132,13 @@ class advection_diffusion:
                 plt.colorbar(label='u(x, y, t)')
                 plt.clim(self.u.min(), self.u.max())
                 plt.title(f'Advection-Diffusion at t = {self.t[i]:.2f} s')
-                plt.xlabel('x')
-                plt.ylabel('y')
+                plt.xlabel(r'$x$')
+                plt.ylabel(r'$y$')
                 plt.xlim(0, self.Lx)
                 plt.ylim(0, self.Ly)
             fig = plt.figure()
             anim = animation.FuncAnimation(fig, animate, frames=len(self.t), interval = 50)
-            anim.save('advection_diffusion_2D.gif', writer='pillow')
+            anim.save('figure_python/advection_diffusion_2D.gif', writer='pillow')
 
 if __name__ == '__main__':
     ad = advection_diffusion(dims = '1D')
