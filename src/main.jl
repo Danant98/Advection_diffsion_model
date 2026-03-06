@@ -27,14 +27,18 @@ function AdvectionDiffusion(Nx = 256, Ny = 256, Lx = 10.0, Ly = 10.0, T = 2.0, d
     y = range(0, Ly, Ny)
     t = 0:dt:T
 
+    dt <= min(dx / vx, dy / vy, (dx^2 + dy^2) / D)
+
+
     # Wavenumbers
     kx = 2π * fftfreq(Nx, 1 / Nx)
     ky = 2π * fftfreq(Ny, 1 / Ny)
     kx_grid = reshape(repeat(kx, inner = Ny), Nx, Ny)
     ky_grid = reshape(repeat(ky, outer = Nx), Nx, Ny)
 
+    
     # Linear operator in Fourier space
-    Lhat = @. -1im * (vx * kx_grid + vy * ky_grid) - D * (kx_grid^2 + ky_grid^2)
+    Lhat = @. -1im * (vx * kx_grid + vy * ky_grid) - D * (kx_grid.^2 + ky_grid.^2)
 
     # Initializing u(x, y, t)
     u = zeros(Float64, Nx, Ny, length(t))
@@ -47,7 +51,7 @@ function inintal_condition(model::AdvectionDiffusion, l::Float64, amp::Float64 =
     # Creating 2D grid
     X = reshape(repeat(model.x, inner = model.Ny), model.Nx, model.Ny)
     Y = reshape(repeat(model.y, outer = model.Nx), model.Nx, model.Ny)
-    amp * exp.(-((X .- model.Lx / 2).^2 .+ ( Y .- model.Ly / 2 ).^2 ) / (2 * l^2) )
+    @. amp * exp(-((X - model.Lx / 2)^2 + ( Y - model.Ly / 2 )^2 ) / (2 * l^2) )
 end
 
 # Solving using Fourier-Galerkin spectral method
@@ -59,7 +63,7 @@ function solve!(model::AdvectionDiffusion)
     uhat = fft(model.u[:, :, 1])
 
     for n in 2:length(model.t)
-        uhat .= uhat ./ (1 .- (model.dt .* model.Lhat))
+        uhat .= @. uhat / (1 - (model.dt * model.Lhat))
 
         model.u[:, :, n] .= real(ifft(uhat))
     end
@@ -68,7 +72,7 @@ end
 # Creating animation
 function animate(model::AdvectionDiffusion)
     anim = @animate for n in 1:length(model.t)
-        contourf(model.x, model.y, model.u[:, :, n], level = 200, colorbar = true)
+        contourf(model.x, model.y, model.u[:, :, n], level = 50, colorbar = true)
         xlabel!("x")
         ylabel!("y")
         title!("Time: $(round(model.t[n], digits = 2))")

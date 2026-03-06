@@ -6,19 +6,20 @@ __author__ = 'Daniel Elisabethsønn Antonsen, UiT Arctic University of Norway'
 import numpy as np
 import scipy.fft as sfft
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 class advection_diffusion:
 
     def __init__(self, 
-                 Nx: int = 128, 
-                 Ny: int = 128,
-                 Lx: float = 1.0, 
-                 Ly: float = 1.0,
-                 T: float = 1.0, 
+                 Nx: int = 256, 
+                 Ny: int = 256,
+                 Lx: float = 4.0, 
+                 Ly: float = 4.0,
+                 T: float = 2.0, 
                  dt: float = 1e-2,
                  vx: float = 0.5,
                  vy: float = 0.0,
-                 D: float = 0.05,
+                 D: float = 1e-2,
                  dims: str = '1D'
                  ) -> None:
         # Storing dimensions
@@ -85,7 +86,7 @@ class advection_diffusion:
         """
         if self.dims == '1D':
             # Initial condition u(x, 0)
-            self.u[:, 0] = self.u0(0.03 * self.Lx) 
+            self.u[:, 0] = self.u0(0.03 * self.L) 
             # Fourier transfrom of initial condition
             uhat = sfft.fft(self.u[:, 0])
 
@@ -112,29 +113,34 @@ class advection_diffusion:
         Animate the solution of the advection - diffusion equation using periodic boundary conditions in spatial domain
         """
         if self.dims == '1D':
-            plt.figure()
-            vmin, vmax = self.u.min(), self.u.max()
-            for i in range(self.u.shape[1]):
+            def animate(i):
                 plt.clf()
-                plt.plot(self.x, self.u[:, i])
+                plt.plot(self.x, self.u[:, i], label = r'$u(x, t)$')
+                plt.ylim(self.u.min(), self.u.max())
+                plt.title(f'Advection-Diffusion at t = {self.t[i]:.2f} s')
                 plt.xlabel(r'$x$')
                 plt.ylabel(r'$u(x, t)$')
-                plt.ylim([vmin, vmax])
-                plt.pause(1E-7)
+                plt.legend()
+            fig = plt.figure()
+            anim = animation.FuncAnimation(fig, animate, frames=len(self.t), interval = 50)
+            anim.save('advection_diffusion_1D.gif', writer='pillow')
+
         elif self.dims == '2D':
-            plt.figure()
-            vmin, vmax = self.u.min(), self.u.max()
-            for i in range(self.u.shape[2]):
+            def animate(i):
                 plt.clf()
-                plt.contourf(self.x, self.y, self.u[:, :, i], levels = 200)
-                plt.colorbar(label = r'$n(x, y)$')
-                plt.xlabel(r'$x$')
-                plt.ylabel(r'$y$')
-                plt.title(f'Time: {self.t[i]:.3f}')
-                plt.pause(1E-8)
-        plt.show()
+                plt.imshow(self.u[:, :, i], extent=(0, self.Lx, 0, self.Ly), origin='lower', cmap='viridis')
+                plt.colorbar(label='u(x, y, t)')
+                plt.clim(self.u.min(), self.u.max())
+                plt.title(f'Advection-Diffusion at t = {self.t[i]:.2f} s')
+                plt.xlabel('x')
+                plt.ylabel('y')
+                plt.xlim(0, self.Lx)
+                plt.ylim(0, self.Ly)
+            fig = plt.figure()
+            anim = animation.FuncAnimation(fig, animate, frames=len(self.t), interval = 50)
+            anim.save('advection_diffusion_2D.gif', writer='pillow')
 
 if __name__ == '__main__':
-    ad = advection_diffusion(dims = '2D')
+    ad = advection_diffusion(dims = '1D')
     ad.solve()
     ad.animate()
